@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+firecrawl-py
+groq
+python-dotenv
+requests
+pydantic
+streamlit
+httpx
+textstat
