@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.analyze import router as analyze_router
 import uvicorn
 
@@ -7,6 +8,15 @@ app = FastAPI(
     title="AI SEO + Security Analyzer",
     description="A production-grade tool to analyze websites for SEO and Security issues.",
     version="1.0.0"
+)
+
+# Add CORS middleware to allow frontend to communicate
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include our /analyze route

@@ -1,121 +1,101 @@
-# 🔍 AI SEO + Security Analyzer
+# 🚀 AI SEO Analyzer SaaS
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+A production-grade, AI-powered SEO and Answer Engine Optimization (AEO) audit tool. Built to give founders and marketers enterprise-level insights with a "supereasy" interface.
 
-A production-grade website analyzer with AI-powered insights. Analyze any website for SEO issues, security signals, and AI/LLM readiness.
+![AI SEO Analyzer Dashboard](https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426&ixlib=rb-4.0.3)
 
-## 🎯 Features
-
-This application implements a comprehensive 32-point audit system:
-
-### 📊 On-Page SEO Analysis
-- ✅ **Title & Meta**: Checks presence, length, and optimization of Title tags and Meta Descriptions.
-- ✅ **Heading Structure**: Verifies exactly one H1 and proper H2/H3 nesting hierarchy.
-- ✅ **Content Quality**: Assesses clarity, Flesch-Kincaid readability scores, and detects thin content (<300 words).
-- ✅ **Images**: Verifies descriptive `alt` text for all images.
-- ✅ **Links**: Checks validity and presence of internal links.
-- ✅ **Performance Structure**: Evaluates DOM complexity (element count) as a proxy for page performance.
-- ✅ **Best Practices**: Analyzes ranking-related on-page factors.
-
-### 🤖 AEO (Answer Engine Optimization)
-*Optimizes your site for AI Search Engines like ChatGPT, Perplexity, and Gemini.*
-- ✅ **Question Targeting**: Detects headers starting with Who/What/How/Why/When.
-- ✅ **Answer Extraction**: Verifies clear, direct answers immediately following headings.
-- ✅ **Conciseness**: Checks if answers fall within the optimal 40–60 word range.
-- ✅ **FAQ Structure**: Detects FAQ-style content and Schema markup (FAQPage/HowTo).
-- ✅ **AI Readiness**: Checks for `llms.txt` and AI-blocking signals (e.g., `noindex`).
-
-### 🛡️ Security & Trust Signals
-- ✅ **HTTPS**: Verifies secure connection availability.
-- ✅ **Trust Files**: Detects presence of `robots.txt`, `humans.txt`, and `security.txt`.
-- ✅ **Data Safety**: Scans for exposed email addresses to prevent scraping.
-- ✅ **Policy Checks**: Validates public trust and policy file accessibility.
-
-### 🧠 AI-Powered Insights
-- ✅ **Plain English**: Uses Groq (Llama 3) to translate technical data into beginner-friendly explanations.
-- ✅ **Actionable Advice**: Provides non-intrusive, advisory recommendations.
-- ✅ **Read-Only**: Performs safe, non-intrusive crawling.
-
-## 🏗️ Architecture
-
-```mermaid
-graph LR
-    A[Streamlit Frontend] -- HTTP --> B[FastAPI Backend]
-    B -- Crawl --> C[Firecrawl Service]
-    B -- AI Analysis --> D[Groq LLM]
-    C -- Content --> B
-    D -- Insights --> B
-    B -- Results --> A
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.9+
-- Firecrawl API key (free at [firecrawl.dev](https://firecrawl.dev))
-- Groq API key (free at [console.groq.com](https://console.groq.com))
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/AI_sec_det.git
-cd AI_sec_det
-```
-
-### 2. Run the Backend (Terminal 1)
-The engine that powers the analysis.
-
-```bash
-cd backend
-pip install -r requirements.txt
-
-# Create .env file from example
-# (For Windows)
-copy .env.example .env
-# (For Mac/Linux)
-# cp .env.example .env
-
-# Start Server
-python main.py
-```
-*(Success: Running on http://0.0.0.0:8000)*
-
-### 2. Run the Frontend (Terminal 2)
-The visual dashboard.
-
-```bash
-cd frontend
-streamlit run app.py
-```
-*(Success: Browser opens at http://localhost:8501)*
-
-## 📖 How to Use
-1. **Open** `http://localhost:8501`.
-2. **Enter URL** (e.g., `https://example.com`) and click **Analyze**.
-3. **View Report**:
-   - **SEO Tab**: Structure, Meta, and Content checks.
-   - **Security Tab**: Trust files and HTTPS status.
-   - **AEO Tab**: AI-readiness and Answer structures.
-   - **Quick Fixes**: AI-generated action plan.
-
-## 📁 Project Structure
-
-```
-AI_sec_det/
-├── backend/                  # FastAPI Logic
-│   ├── main.py              # Server Entry
-│   ├── app/utils/           # Analysis Modules
-│   │   ├── seo_checks.py    # SEO & Content Logic
-│   │   ├── security_checks.py # Trust & Files Logic
-│   │   ├── aeo_checks.py    # AI Optimization Logic
-│   │   └── ai_explainer.py  # Groq/Llama Integration
-└── frontend/                # Streamlit UI
-    ├── app.py              # Dashboard Code
-```
-
-## � License
-MIT
+## ✨ Core Features
+- **🤖 AI-First Analysis**: Uses OpenAI to generate human-readable insights instead of raw data.
+- **🕸️ Deep Crawling**: Powered by Firecrawl for high-fidelity, LLM-ready web scraping.
+- **🔍 AEO Optimization**: Unique focus on Answer Engine Optimization (ChatGPT, Perplexity, Gemini).
+- **🔐 Secure & Persistent**: Full integration with Supabase for Auth (Magic Links/Google) and data storage.
+- **📄 Professional PDF Export**: Generate and download beautifully formatted audit reports.
+- **🌗 Smart Theming**: Seamless switch between Dark and Light mode.
 
 ---
-**Built for Modern Web Standards**
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    subgraph Frontend ["🌐 Frontend (Vite + React)"]
+        A[User Interface] --> B[Components]
+        B -->|Light/Dark| C[Theme Engine]
+        B --> D[Auth Flow]
+        style Frontend fill:#f0f9ff,stroke:#0369a1,stroke-width:2px
+    end
+
+    subgraph Backend ["⚙️ Backend (Python FastAPI)"]
+        E[API Endpoints] --> F[Processing Pipeline]
+        F --> G[AI Orchestration]
+        F --> H[Supabase Data]
+        style Backend fill:#f0fdf4,stroke:#15803d,stroke-width:2px
+    end
+
+    subgraph External ["🔌 External Cloud"]
+        I[OpenAI 4o]
+        J[Firecrawl]
+        K[Supabase Cloud]
+        style External fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px
+    end
+
+    B -->|API Calls| E
+    G --> I
+    G --> J
+    H --> K
+```
+
+---
+
+## 🛠️ Tech Stack
+- **Frontend**: Vite, React, Tailwind CSS, Framer Motion, Lucide Icons.
+- **Backend**: Python, FastAPI, Uvicorn, OpenAI, Firecrawl.
+- **Database/Auth**: Supabase (PostgreSQL).
+- **Deployment**: Render (Backend), Vercel (Frontend).
+
+---
+
+## 🚀 Local Development
+
+### 1. Prerequisites
+- Python 3.12+
+- Node.js 18+
+- [Supabase](https://supabase.com/) project URL + Keys
+- [OpenAI](https://openai.com/) API Key
+- [Firecrawl](https://firecrawl.dev/) API Key
+
+### 2. Environment Setup
+- **Backend**: Update `backend/.env` (use `.env.example` as guide)
+- **Frontend**: Update `frontend_web/.env` (use `.env.example` as guide)
+
+### 3. Run with One-Click Scripts
+We provide robust `.bat` scripts for Windows users that handle virtual environments and dependency checks:
+- **`start_backend.bat`**: Initializes venv and starts FastAPI at `http://localhost:8000`
+- **`start_frontend.bat`**: Installs modules and starts Vite at `http://localhost:5173`
+
+---
+
+## ☁️ Deployment Guide (The Split Plan)
+
+### 1. Backend on Render
+1. Create a new **Web Service** on Render.
+2. Select your repository.
+3. Set the **Root Directory** to `backend`.
+4. Render will auto-detect the `render.yaml` and `requirements.txt`.
+5. Add your **Environment Variables** in the Render dashboard:
+   - `OPENAI_API_KEY`, `FIRECRAWL_API_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DB_PASSWORD`.
+
+### 2. Frontend on Vercel
+1. Create a new Project on Vercel.
+2. Set the **Root Directory** to `frontend_web`.
+3. Framework Preset: **Vite**.
+4. Add **Environment Variables**:
+   - `VITE_API_URL`: Your Render backend URL.
+   - `VITE_SUPABASE_URL`: Your Supabase URL.
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase Anon Key.
+5. Deploy!
+
+---
+
+## 📄 License
+MIT License. Built with ❤️ for the SEO Community.

@@ -1,4 +1,6 @@
 import os
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from firecrawl import FirecrawlApp
 import requests
@@ -9,52 +11,70 @@ load_dotenv()
 
 class FirecrawlClient:
     """
-    A simple client to interact with the Firecrawl API.
-    Firecrawl is great because it handles complex websites and returns 
-    data in a format that's easy for us to process (like Markdown and clean JSON).
+    A client to interact with the Firecrawl API.
+    Now supports ASYNC execution for higher performance.
     """
     def __init__(self):
-        api_key = os.getenv("FIRECRAWL_API_KEY")
-        if not api_key:
-            raise ValueError("FIRECRAWL_API_KEY not found in environment variables")
-        self.app = FirecrawlApp(api_key=api_key)
+        self.api_key = os.getenv("FIRECRAWL_API_KEY")
+        self.executor = ThreadPoolExecutor(max_workers=3)
 
-    def scrape_url(self, url: str) -> Dict[str, Any]:
+    async def scrape_url(self, url: str) -> Dict[str, Any]:
         """
-        Scrapes a single URL and returns HTML, metadata, and clean content.
+        Asynchronously scrapes a URL using Firecrawl v1 API directly via HTTP.
         """
-        try:
-            print(f"DEBUG: Attempting to scrape {url} using app.v1.scrape_url")
-            # The newest firecrawl-py uses app.v1.scrape_url with keyword arguments
-            result = self.app.v1.scrape_url(
-                url, 
-                formats=['html', 'markdown'], 
-                only_main_content=False,
-                wait_for=1000 # Wait only 1 second for JS to settle
-            )
-            # The result is now a V1ScrapeResponse object, we need to convert it to a dict
-            # or access its attributes. Most SDKs have a .model_dump() or similar if they use Pydantic.
-            print(f"DEBUG: Scrape result: {type(result)}")
+        if not self.api_key:
+            return {"error": "API Key missing"}
             
-            # Firecrawl v1 result objects usually have 'data' attribute or are dict-like
-            if hasattr(result, 'model_dump'):
-                return result.model_dump()
-            return dict(result)
-
+        print(f"DEBUG: Scrapping {url} via direct API call")
+        try:
+            loop = asyncio.get_event_loop()
+            
+            def _do_scrape():
+                headers = {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "url": url,
+                    "formats": ["markdown", "html"]
+                }
+                response = requests.post(
+                    "https://api.firecrawl.dev/v1/scrape",
+                    headers=headers,
+                    json=payload,
+                    timeout=30
+                )
+                if response.status_code != 200:
+                    return {"error": f"API Error {response.status_code}: {response.text}"}
+                
+                # Firecrawl v1 returns data inside a 'data' key
+                json_res = response.json()
+                return json_res.get('data', json_res)
+                
+            result = await loop.run_in_executor(self.executor, _do_scrape)
+            return result
         except Exception as e:
-            print(f"DEBUG: Firecrawl Exception for {url}: {e}")
-            return {}
+            print(f"DEBUG: Firecrawl Direct Error: {str(e)}")
+            return {"error": str(e)}
 
-    def check_file_exists(self, base_url: str, filename: str) -> bool:
+    def _scrape_sync(self, url: str) -> Dict[str, Any]:
+        # Deprecated
+        return {}
+
+    async def check_file_exists(self, base_url: str, filename: str) -> bool:
         """
-        Checks if a specific file (like robots.txt) exists on the server.
-        We do this by trying to fetch the URL and seeing if the server says 'OK'.
+        Checks if a file exists (Async) using httpx would be best, 
+        but for now we'll wrap requests to keep dependencies simple or use httpx if available.
+        Let's use requests in threadpool for consistency with the rest of this class
+        until we fully migrate to httpx everywhere.
         """
-        # Ensure base_url doesn't have a trailing slash before adding filename
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._check_file_sync, base_url, filename)
+
+    def _check_file_sync(self, base_url: str, filename: str) -> bool:
         base_url = base_url.rstrip('/')
         target_url = f"{base_url}/{filename}"
         try:
-            # We use a simple 'head' request to save time (we just want to see if it's there)
             response = requests.head(target_url, timeout=5, allow_redirects=True)
             return response.status_code == 200
         except:

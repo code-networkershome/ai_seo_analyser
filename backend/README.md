@@ -1,91 +1,93 @@
-# Project Walkthrough: AI-based SEO + Security Web Analyzer
+# 🧠 AI SEO Analyzer - Backend Engine
 
-This guide explains how the system works, the reasoning behind the code, and how you can run it yourself.
+The robust Python FastAPI engine that powers the AI SEO Analyzer. It handles high-fidelity crawling, AI logic orchestration, and secure data persistence.
 
-## System Architecture
+## 🚀 Key Responsibilities
+- **Web Crawling**: Uses the `Firecrawl` API to bypass bot protections and extract clean markdown data.
+- **AI Analytics**: Orchestrates OpenAI calls to analyze content for SEO, AEO, and Security issues.
+- **Data Persistence**: Saves audit reports to Supabase for historical tracking.
+- **API Server**: Provides a high-performance REST API for the React frontend.
 
-We've built this system using a professional "Modular Architecture". This means instead of putting all the code in one giant file, we split it into smaller, manageable pieces based on what they do.
+## 🏗️ Architecture Overview
 
 ```mermaid
 graph TD
-    A[main.py: App Entry] --> B[api/analyze.py: The Route]
-    C[frontend/app.py: Streamlit UI] --> B
-    B --> D[services/firecrawl_client.py: Techie Crawler]
-    B --> E[utils/seo_checks.py: SEO Specialist]
-    B --> F[utils/security_checks.py: Security Guard]
-    B --> G[utils/ai_explainer.py: Friendly Mentor]
-    G --> H[Groq API (Llama 3)]
-    D --> I[Firecrawl API]
+    A[Client] -->|HTTP Request| B[FastAPI Server]
+    B --> C[Request Validation]
+    C --> D[URL Processing]
+    D --> E[Content Fetching]
+    E --> F[SEO Analysis]
+    E --> G[Security Analysis]
+    E --> H[AI Readiness Check]
+    F --> I[Result Aggregation]
+    G --> I
+    H --> I
+    I --> J[Response Generation]
+    J -->|JSON Response| A
+    
+    subgraph External Services
+        K[OpenAI API]
+        L[Supabase DB]
+        M[Firecrawl]
+    end
+    
+    F --> K
+    G --> K
+    H --> K
+    I --> L
+    E --> M
 ```
 
-## Why These Tools?
+### Core Components
 
-- **FastAPI**: We use this because it's extremely fast and handles many users at once. It also automatically checks that the data users send us (like the URL) is correct.
-- **Firecrawl**: Scraping websites is hard because many sites try to block robots. Firecrawl acts like a real human browser, bypassing blocks and giving us clean data.
-- **Groq**: We use Groq to translate technical jargon into simple English. It's the fastest AI inference engine available today, making our reports nearly instant.
+1. **API Layer (FastAPI)**
+   - RESTful endpoints for analysis requests
+   - Request validation and rate limiting
+   - Authentication and authorization
+   - CORS and security headers
 
-## File-by-File Explanation
+2. **Processing Pipeline**
+   - URL validation and normalization
+   - Content extraction and cleaning
+   - Parallel analysis execution
+   - Result aggregation and scoring
 
-### 1. [main.py](file:///c:/Users/harsh/Desktop/AI_sec_det/backend/main.py)
-This is the "Receptionist" of our app. It starts the server and directs incoming requests to the right place.
+3. **Analysis Modules**
+   - **SEO Analyzer**: Checks metadata, headings, alt texts, etc.
+   - **Security Scanner**: Identifies vulnerabilities and misconfigurations
+   - **AI Readiness**: Evaluates content structure for LLM compatibility
 
-### 2. [firecrawl_client.py](file:///c:/Users/harsh/Desktop/AI_sec_det/backend/app/services/firecrawl_client.py)
-The "Explorer". It uses its secret API key to visit the website you provide. It brings back the HTML (raw code) and Metadata (title, description). It also checks for special files like `robots.txt`.
+4. **Data Layer**
+   - Supabase for persistent storage
+   - Caching layer for performance
+   - Async database operations
 
-### 3. [seo_checks.py](file:///c:/Users/harsh/Desktop/AI_sec_det/backend/app/utils/seo_checks.py)
-The "Checker". It looks at the HTML and counts things. Does it have a title? How many headings? Are there images without descriptions? It creates a list of technical "issues".
+5. **External Integrations**
+   - OpenAI for advanced analysis
+   - Firecrawl for web content extraction
+   - Supabase for authentication and storage
 
-### 4. [security_checks.py](file:///c:/Users/harsh/Desktop/AI_sec_det/backend/app/utils/security_checks.py)
-The "Guard". It ensures the site is safe (HTTPS) and checks for exposed email addresses that spammers could steal. It also looks for trust files like `security.txt`.
+## 📦 Setup & Installation
 
-### 5. [ai_explainer.py](file:///c:/Users/harsh/Desktop/AI_sec_det/backend/app/utils/ai_explainer.py)
-The "Translator". It takes the boring technical issues (like "Missing Alt Tag") and turns them into helpful advice (like "Include descriptions for images so blind users can understand your site").
+1. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 6. [app.py](file:///c:/Users/harsh/Desktop/AI_sec_det/frontend/app.py)
-The "Face" of the project. A beautiful Streamlit interface that lets you enter a URL and see the results visually in tabs and cards.
+2. **Environment Variables**:
+   Create a `.env` file with:
+   - `OPENAI_API_KEY`
+   - `FIRECRAWL_API_KEY`
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY` (Service Role or Anon depending on RLS)
 
----
+3. **Run Server**:
+   ```bash
+   uvicorn main:app --reload
+   ```
 
-## Setup & How to Run
+## 🛠️ API Endpoints
+- `POST /analyze`: Main endpoint. Takes a `{ "url": "..." }` and returns a comprehensive JSON audit.
 
-### Step 1: Install Dependencies
-Open your terminal in the `backend/` folder and run:
-```bash
-pip install -r requirements.txt
-```
-*Note: This includes `fastapi`, `uvicorn`, `firecrawl-py`, `groq`, and `textstat`.*
-
-### Step 2: Configure API Keys
-1. Copy `.env.example` to `.env`.
-2. Add your **Firecrawl API Key** and **Groq API Key**.
-
-### Step 3: Run the Backend
-```bash
-python main.py
-```
-*(Alternative for Windows: `py main.py`)*
-
-You should see: `INFO: Uvicorn running on http://0.0.0.0:8000`
-
-### Step 4: Connect Frontend
-Once this is running, keep this terminal open and go to the `frontend/` folder to start the UI.
-
----
-
-## Features & Modules
-
-- **SEO Checks** (`seo_checks.py`):
-  - Hierarchy (H1->H2->H3)
-  - Readability (Flesch-Kincaid)
-  - Content Depth (Word Count)
-  - Tag Health (Title, Meta, Alt text)
-- **Security** (`security_checks.py`):
-  - HTTPS & SSL
-  - Trust Files (robots.txt, security.txt, humans.txt)
-  - Data Leakage (Email exposure)
-- **AEO** (`aeo_checks.py`):
-  - Answer Engine Optimization (AI-readiness)
-  - Schema Markup detection
-  - Heading-to-Answer alignment verification
-- **AI Explainer** (`ai_explainer.py`):
-  - Generates beginner-friendly reports using Groq (Llama 3).
+## ☁️ Deployment (Render)
+This backend is optimized for Render. It includes a `Procfile` for automatic deployment. Simply connect your repo and ensure your environment variables are set in the Render dashboard.
