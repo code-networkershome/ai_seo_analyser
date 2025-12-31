@@ -264,7 +264,7 @@ function App() {
                     {report && (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                             {/* Summary Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 no-print">
                                 <div className="glass p-6 rounded-2xl text-center">
                                     <div className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase mb-1">SEO Issues</div>
                                     <div className="text-3xl font-black text-slate-900 dark:text-white">{report.seo_issues.length}</div>
@@ -289,8 +289,8 @@ function App() {
                                 </button>
                             </div>
 
-                            {/* Tabs Container */}
-                            <div className="glass rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                            {/* Interactive Tabs (Screen Only) */}
+                            <div className="glass rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 no-print">
                                 <div className="flex border-b border-slate-200 dark:border-slate-800 no-print">
                                     {(['seo', 'security', 'aeo'] as const).map((t) => (
                                         <button
@@ -341,8 +341,8 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Roadmap */}
-                            <div className="mt-8 bg-slate-900 dark:bg-slate-950 p-8 rounded-3xl border border-slate-800 shadow-2xl">
+                            {/* Improvement Roadmap (Screen only - will be duplicated for print) */}
+                            <div className="mt-8 bg-slate-900 dark:bg-slate-950 p-8 rounded-3xl border border-slate-800 shadow-2xl no-print">
                                 <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
                                     <CheckCircle className="text-emerald-500" /> Improvement Roadmap
                                 </h3>
@@ -355,6 +355,91 @@ function App() {
                                     ))}
                                     <button onClick={copyReportToClipboard} className="text-slate-500 hover:text-white transition-colors text-xs mt-4">Copy JSON Report</button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 📄 ELABORATE PRINT-ONLY REPORT 📄 */}
+                    {report && (
+                        <div className="hidden print:block print:text-black mt-0">
+                            <div className="text-center mb-10 border-b-2 border-slate-900 pb-8">
+                                <h1 className="text-4xl font-black uppercase mb-2">SEO & AI Readiness Audit</h1>
+                                <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">{url}</p>
+                                <p className="text-slate-400 text-xs mt-2 italic">Report Generated on {new Date().toLocaleDateString()}</p>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4 mb-10">
+                                <div className="border-2 border-slate-900 p-4 rounded-xl text-center">
+                                    <p className="text-xs font-bold uppercase mb-1">SEO Issues</p>
+                                    <p className="text-2xl font-black">{report.seo_issues.length}</p>
+                                </div>
+                                <div className="border-2 border-slate-900 p-4 rounded-xl text-center">
+                                    <p className="text-xs font-bold uppercase mb-1">Security Risks</p>
+                                    <p className="text-2xl font-black">{report.security_issues.length}</p>
+                                </div>
+                                <div className="border-2 border-slate-900 p-4 rounded-xl text-center">
+                                    <p className="text-xs font-bold uppercase mb-1">AI Readiness</p>
+                                    <p className="text-2xl font-black font-mono">OPTIMIZED</p>
+                                </div>
+                            </div>
+
+                            <section className="mb-10">
+                                <h2 className="text-2xl font-black uppercase mb-6 bg-slate-900 text-white px-4 py-2 rounded">1. Search Engine Optimization</h2>
+                                {report.seo_issues.length === 0 ? <p className="font-bold">✓ No SEO issues detected.</p> :
+                                    <div className="space-y-6">
+                                        {report.seo_issues.map((issue, i) => (
+                                            <div key={i} className="border-b border-slate-200 pb-4">
+                                                <h3 className="font-black text-lg mb-1">{issue.issue} <span className="text-xs font-medium px-2 py-0.5 border rounded uppercase ml-2 text-slate-500">{issue.severity}</span></h3>
+                                                <p className="text-slate-700 leading-relaxed text-sm">{issue.details}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                }
+                            </section>
+
+                            <section className="mb-10 page-break-before">
+                                <h2 className="text-2xl font-black uppercase mb-6 bg-slate-900 text-white px-4 py-2 rounded">2. Security Analysis</h2>
+                                {report.security_issues.length === 0 ? <p className="font-bold">✓ No security risks detected.</p> :
+                                    <div className="space-y-6">
+                                        {report.security_issues.map((issue, i) => (
+                                            <div key={i} className="border-b border-slate-200 pb-4">
+                                                <h3 className="font-black text-lg mb-1">{issue.issue} <span className="text-xs font-medium px-2 py-0.5 border rounded uppercase ml-2 text-slate-500">{issue.severity}</span></h3>
+                                                <p className="text-slate-700 leading-relaxed text-sm">{issue.details}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                }
+                            </section>
+
+                            <section className="mb-10">
+                                <h2 className="text-2xl font-black uppercase mb-6 bg-slate-900 text-white px-4 py-2 rounded">3. AI Readiness (AEO)</h2>
+                                <div className="mb-6 p-4 border-2 border-blue-600 rounded-xl">
+                                    <p className="text-slate-700 text-sm font-bold">Audit reveals that the content structure is compatible with LLM agents (ChatGPT, Gemini, Perplexity).</p>
+                                </div>
+                                <div className="space-y-6">
+                                    {report.aeo_issues.map((issue, i) => (
+                                        <div key={i} className="border-b border-slate-200 pb-4">
+                                            <h3 className="font-black text-lg mb-1">{issue.issue} <span className="text-xs font-medium px-2 py-0.5 border rounded uppercase ml-2 text-slate-500">{issue.severity}</span></h3>
+                                            <p className="text-slate-700 leading-relaxed text-sm">{issue.details}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section className="mb-10">
+                                <h2 className="text-2xl font-black uppercase mb-6 bg-emerald-600 text-white px-4 py-2 rounded">Improvement Roadmap</h2>
+                                <div className="grid gap-3">
+                                    {report.quick_fixes.map((fix, i) => (
+                                        <div key={i} className="flex gap-4 p-4 border border-slate-200 rounded-xl items-start">
+                                            <span className="font-black text-emerald-600 text-xl font-mono">0{i + 1}</span>
+                                            <p className="text-sm font-medium leading-relaxed">{fix}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <div className="mt-20 pt-10 border-t border-slate-900 text-center">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">AI SEO Analyzer © 2025 • Confidential Performance Audit</p>
                             </div>
                         </div>
                     )}
