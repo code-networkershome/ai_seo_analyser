@@ -88,7 +88,8 @@ function App() {
         setReport(null);
         setError('');
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const apiUrl = rawApiUrl.replace(/\/$/, '');
             const response = await fetch(`${apiUrl}/analyze`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
