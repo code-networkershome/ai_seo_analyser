@@ -31,39 +31,72 @@ class AIExplainer:
             }
 
         prompt = f"""
-        You are a world-class SEO and Cybersecurity expert (like a mix of Brian Dean and a white-hat hacker).
-        Analyze the following raw audit data for a website and provide a premium, Semrush-style report.
+        You are a world-class SEO consultant and web security expert trusted by Fortune 500 companies.
+        Analyze the following audit data and provide a premium, actionable report.
         
         DATA:
         SEO Issues: {json.dumps(seo_issues)}
         Security Issues: {json.dumps(security_issues)}
-        AEO (Answer Engine) Issues: {json.dumps(aeo_issues)}
+        AEO (Answer Engine Optimization) Issues: {json.dumps(aeo_issues)}
 
-        Your goal is to explain these findings to a non-technical business owner.
+        Your goal is to explain these findings to a non-technical business owner in a way that drives action.
+        
+        CRITICAL RULES:
+        1. NO HALLUCINATIONS: Explain ONLY the provided issues. Do NOT invent new problems.
+        2. EXPLAINER ONLY: You are translating technical issues, not detecting new ones.
+        3. PROFESSIONAL TONE: Avoid hyperbole like "you'll rank #1" or "catastrophic failure". Be measured.
+        4. If a category has 0 issues, say: "Audit successful: No issues detected in this category."
+        5. INCLUDE impact and fix for EVERY issue - these are mandatory fields.
         
         OUTPUT FORMAT (JSON):
         {{
-            "seo_issues": [ {{"issue": "Title Tag Missing", "severity": "High", "details": "Explanation..."}} ],
-            "security_issues": [ {{"issue": "SSL Missing", "severity": "Critical", "details": "Explanation..."}} ],
-            "aeo_issues": [ {{"issue": "No schema markup", "severity": "Medium", "details": "Explanation..."}} ],
-            "quick_fixes": [ "Step-by-step actionable list of top 3 priorities" ]
+            "seo_issues": [ 
+                {{"issue": "Issue Title", "severity": "High/Medium/Low", "details": "Clear explanation for business owners", "impact": "Specific business impact of this issue", "fix": "Exact step-by-step fix with code examples if relevant"}} 
+            ],
+            "security_issues": [ 
+                {{"issue": "Issue Title", "severity": "Critical/High/Medium/Low", "details": "...", "impact": "...", "fix": "..."}} 
+            ],
+            "aeo_issues": [ 
+                {{"issue": "Issue Title", "severity": "High/Medium/Low", "details": "...", "impact": "...", "fix": "..."}} 
+            ],
+            "quick_fixes": [
+                "🔴 [HIGH PRIORITY] First critical action - explain what to do and estimated time (e.g., '10 min fix')",
+                "🟠 [MEDIUM PRIORITY] Second important action - clear actionable step",
+                "🟢 [QUICK WIN] Third easy improvement - something that takes under 5 minutes",
+                "💡 [BONUS TIP] One advanced recommendation for maximum impact"
+            ]
         }}
         
-        Keep explanations concise, professional, and actionable.
+        QUICK_FIXES RULES:
+        - Prioritize by: Critical security issues first, then High SEO issues, then AEO improvements
+        - Each fix should be a complete, actionable sentence (not just "fix H1 tag")
+        - Include time estimates when possible (e.g., "5 min", "30 min", "requires developer")
+        - Use emojis for visual priority: 🔴 High, 🟠 Medium, 🟢 Quick Win, 💡 Pro Tip
         """
 
         try:
             response = await self.client.chat.completions.create(
-                model="gpt-4o", # Using a high-quality model
+                model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are a helpful SEO Audit assistant. Output JSON only."},
+                    {"role": "system", "content": "You are a professional web audit translator. You translate code-detected issues into business value. Do NOT detect new issues. Output JSON only."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"}
             )
             
             content = response.choices[0].message.content
-            return json.loads(content)
+            ai_response = json.loads(content)
+            
+            # Sanitize: Only keep expected keys to prevent AI from overwriting scores
+            sanitized_response = {
+                "seo_issues": ai_response.get("seo_issues", seo_issues),
+                "security_issues": ai_response.get("security_issues", security_issues),
+                "aeo_issues": ai_response.get("aeo_issues", aeo_issues),
+                "quick_fixes": ai_response.get("quick_fixes", ["Review the issues above and prioritize by severity."])
+            }
+            
+            print(f"AI Explainer: Sanitized response - SEO issues: {len(sanitized_response['seo_issues'])}, Security: {len(sanitized_response['security_issues'])}, AEO: {len(sanitized_response['aeo_issues'])}")
+            return sanitized_response
 
         except Exception as e:
             print(f"OpenAI Error: {e}")

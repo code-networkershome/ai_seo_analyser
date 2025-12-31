@@ -1,93 +1,136 @@
 # 🧠 AI SEO Analyzer - Backend Engine
 
-The robust Python FastAPI engine that powers the AI SEO Analyzer. It handles high-fidelity crawling, AI logic orchestration, and secure data persistence.
+The Python FastAPI backend that powers the AI SEO Analyzer. Handles web crawling, AI orchestration, scoring, and secure data persistence.
 
-## 🚀 Key Responsibilities
-- **Web Crawling**: Uses the `Firecrawl` API to bypass bot protections and extract clean markdown data.
-- **AI Analytics**: Orchestrates OpenAI calls to analyze content for SEO, AEO, and Security issues.
-- **Data Persistence**: Saves audit reports to Supabase for historical tracking.
-- **API Server**: Provides a high-performance REST API for the React frontend.
+## 🚀 Core Features
 
-## 🏗️ Architecture Overview
+### Analysis Pipeline
+- **SEO Checks**: Title, meta description, headings (H1-H6), content depth, readability, DOM complexity
+- **Security Checks**: HTTPS, exposed emails, API key detection (AWS, Stripe, Google, Firebase), sensitive files
+- **AEO Checks**: Question-based headings, FAQ sections, JSON-LD schema, AI bot blocking detection
 
-```mermaid
-graph TD
-    A[Client] -->|HTTP Request| B[FastAPI Server]
-    B --> C[Request Validation]
-    C --> D[URL Processing]
-    D --> E[Content Fetching]
-    E --> F[SEO Analysis]
-    E --> G[Security Analysis]
-    E --> H[AI Readiness Check]
-    F --> I[Result Aggregation]
-    G --> I
-    H --> I
-    I --> J[Response Generation]
-    J -->|JSON Response| A
-    
-    subgraph External Services
-        K[OpenAI API]
-        L[Supabase DB]
-        M[Firecrawl]
-    end
-    
-    F --> K
-    G --> K
-    H --> K
-    I --> L
-    E --> M
+### AI Explainer
+- **GPT-4o Integration**: Translates technical issues into business-friendly advice
+- **Unique Impact/Fix**: Each issue has specific business impact and exact fix instructions
+- **Priority Roadmap**: Auto-generates 4 prioritized recommendations with emoji coding
+
+### Security Hardening
+- **SSRF Protection**: DNS-based blocking of private IP ranges (10.x, 192.168.x, 127.x)
+- **Rate Limiting**: 5 requests/hour per IP (in-memory middleware)
+- **Safe Errors**: No internal stack traces exposed to clients
+
+### User Tracking
+- **JWT Token Extraction**: Reads user_id and email from Supabase auth tokens
+- **Report Linking**: All scans saved with user_id, user_email for account history
+
+---
+
+## 📁 Project Structure
+
+```
+backend/
+├── app/
+│   ├── api/
+│   │   └── analyze.py      # Main /analyze endpoint
+│   ├── services/
+│   │   ├── firecrawl_client.py   # Web scraping
+│   │   └── supabase_client.py    # Database client
+│   └── utils/
+│       ├── seo_checks.py    # SEO analysis (9 checks)
+│       ├── security_checks.py # Security analysis (6 checks)
+│       ├── aeo_checks.py    # AEO analysis (5 checks)
+│       └── ai_explainer.py  # GPT-4o AI explanations
+├── main.py                  # FastAPI app with CORS, rate limiting
+├── requirements.txt         # Python dependencies
+├── supabase_schema.sql      # Database schema
+└── .env.example             # Environment template
 ```
 
-### Core Components
+---
 
-1. **API Layer (FastAPI)**
-   - RESTful endpoints for analysis requests
-   - Request validation and rate limiting
-   - Authentication and authorization
-   - CORS and security headers
+## 🔧 API Endpoints
 
-2. **Processing Pipeline**
-   - URL validation and normalization
-   - Content extraction and cleaning
-   - Parallel analysis execution
-   - Result aggregation and scoring
+### `POST /analyze`
+Analyze a website for SEO, Security, and AEO issues.
 
-3. **Analysis Modules**
-   - **SEO Analyzer**: Checks metadata, headings, alt texts, etc.
-   - **Security Scanner**: Identifies vulnerabilities and misconfigurations
-   - **AI Readiness**: Evaluates content structure for LLM compatibility
+**Request:**
+```json
+{
+  "url": "https://example.com"
+}
+```
 
-4. **Data Layer**
-   - Supabase for persistent storage
-   - Caching layer for performance
-   - Async database operations
+**Headers (Optional):**
+```
+Authorization: Bearer <supabase_jwt_token>
+```
 
-5. **External Integrations**
-   - OpenAI for advanced analysis
-   - Firecrawl for web content extraction
-   - Supabase for authentication and storage
+**Response:**
+```json
+{
+  "seo_score": 78,
+  "security_score": 89,
+  "aeo_score": 70,
+  "seo_issues": [...],
+  "security_issues": [...],
+  "aeo_issues": [...],
+  "quick_fixes": [
+    "🔴 [HIGH PRIORITY] Add H1 heading - 10 min fix",
+    "🟠 [MEDIUM PRIORITY] Create security.txt - 20 min",
+    "🟢 [QUICK WIN] Adjust meta description - 5 min",
+    "💡 [BONUS TIP] Add FAQPage schema for AI visibility"
+  ]
+}
+```
 
-## 📦 Setup & Installation
+---
 
-1. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 📦 Setup
 
-2. **Environment Variables**:
-   Create a `.env` file with:
-   - `OPENAI_API_KEY`
-   - `FIRECRAWL_API_KEY`
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY` (Service Role or Anon depending on RLS)
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-3. **Run Server**:
-   ```bash
-   uvicorn main:app --reload
-   ```
+### 2. Configure Environment
+Copy `.env.example` to `.env` and fill in:
+```env
+OPENAI_API_KEY=sk-...
+FIRECRAWL_API_KEY=fc-...
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+```
 
-## 🛠️ API Endpoints
-- `POST /analyze`: Main endpoint. Takes a `{ "url": "..." }` and returns a comprehensive JSON audit.
+### 3. Setup Database
+Run `supabase_schema.sql` in Supabase SQL Editor to create the `reports` table.
+
+### 4. Run Server
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+---
 
 ## ☁️ Deployment (Render)
-This backend is optimized for Render. It includes a `Procfile` for automatic deployment. Simply connect your repo and ensure your environment variables are set in the Render dashboard.
+
+1. Create **Web Service** on Render
+2. Set **Root Directory**: `backend`
+3. **Build Command**: `pip install -r requirements.txt`
+4. **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+5. Add all environment variables from `.env.example`
+
+---
+
+## 📊 Scoring Algorithm
+
+```
+Score = max(0, 100 - sum(penalties))
+
+Severity Weights:
+- Critical: 20 points
+- High: 10 points
+- Medium: 5 points
+- Low: 2 points
+```
+
+Each category (SEO, Security, AEO) is scored independently.

@@ -12,3 +12,4 @@ psycopg2-binary
 git-python
 python-multipart
 gunicorn
+PyJWT

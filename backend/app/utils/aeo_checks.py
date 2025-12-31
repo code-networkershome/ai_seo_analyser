@@ -5,21 +5,14 @@ def perform_aeo_checks(html: str, metadata: Dict[str, Any]) -> List[Dict[str, An
     """
     Analyzes the content for Answer Engine Optimization (AEO) patterns.
     AEO focuses on being cited by AI models (ChatGPT, Gemini, Perplexity).
-    
-    Key metrics:
-    1. Question-based headings (What/How/Why).
-    2. Concise answers (40-60 words) immediately following headings.
-    3. Structural clarity (FAQ sections, Schema markup).
     """
     issues = []
     
     # Pre-compute common regex
-    # Matches headings H1-H3
     heading_pattern = re.compile(r'<(h[1-3])[^>]*>(.*?)</\1>', re.IGNORECASE | re.DOTALL)
     headings = heading_pattern.findall(html)
     
     # 1. Check for Question-based Headings
-    # AI models often look for direct questions to answer users.
     question_starters = ["what", "how", "why", "where", "when", "who", "can", "does", "is", "are"]
     question_headings_count = 0
     
@@ -32,13 +25,12 @@ def perform_aeo_checks(html: str, metadata: Dict[str, Any]) -> List[Dict[str, An
         issues.append({
             "issue": "No Question-Based Headings",
             "severity": "High",
-            "details": "AI Search Engines look for 'What', 'How', 'Why' questions in headings. Your content lacks these direct question patterns."
+            "details": "AI Search Engines look for 'What', 'How', 'Why' questions in headings. Your content lacks these direct question patterns.",
+            "impact": "AI models like ChatGPT may skip your content when users ask direct questions, losing citation opportunities.",
+            "fix": "Rewrite at least 3 headings as questions (e.g., 'Benefits of X' → 'What are the Benefits of X?')."
         })
 
-    # 2. Check for Concise Answer Paragraphs (Strict Alignment)
-    # We look for <hX>...<p>Answer</p> where Answer is 40-60 words.
-    # Regex to find <p> tag immediately following a closing heading tag
-    # We allow some whitespace/newlines
+    # 2. Check for Concise Answer Paragraphs
     alignment_matches = re.finditer(r'</h[1-6]>\s*<p[^>]*>(.*?)</p>', html, re.IGNORECASE | re.DOTALL)
     strict_answer_count = 0
     
@@ -53,16 +45,19 @@ def perform_aeo_checks(html: str, metadata: Dict[str, Any]) -> List[Dict[str, An
         issues.append({
             "issue": "Missing Strict Answer Alignment",
             "severity": "Medium",
-            "details": "AI models prioritize answers immediately following headings. Found 0 headings followed instantly by a 40-60 word answer."
+            "details": "AI models prioritize answers immediately following headings. Found 0 headings followed instantly by a 40-60 word answer.",
+            "impact": "Your content may not be selected for AI-generated featured snippets or direct answers.",
+            "fix": "After each question heading, add a 40-60 word summary paragraph that directly answers the question."
         })
 
     # 3. Detect FAQ Section
-    # Look for "FAQ" or "Frequently Asked Questions" in content
     if not re.search(r'freq(uently)?\s*asked\s*quest(ions)?|faq', html, re.IGNORECASE):
         issues.append({
             "issue": "Missing FAQ Section",
             "severity": "Medium",
-            "details": "An FAQ section is the easiest way to rank in AI answers. No obvious FAQ section was detected."
+            "details": "An FAQ section is the easiest way to rank in AI answers. No obvious FAQ section was detected.",
+            "impact": "You're missing opportunities to appear in AI-powered 'People Also Ask' and voice search results.",
+            "fix": "Add an FAQ section with 5-10 common questions and concise answers near the bottom of your page."
         })
 
     # 4. Check for Schema Markup (JSON-LD)
@@ -78,12 +73,12 @@ def perform_aeo_checks(html: str, metadata: Dict[str, Any]) -> List[Dict[str, An
         issues.append({
             "issue": "Missing AI-Friendly Schema",
             "severity": "High",
-            "details": "We didn't find 'FAQPage' or 'HowTo' schema markup. This code helps robots understand your content structure instantly."
+            "details": "We didn't find 'FAQPage' or 'HowTo' schema markup. This code helps robots understand your content structure instantly.",
+            "impact": "AI crawlers may not properly categorize your content, reducing chances of being cited in AI responses.",
+            "fix": "Add FAQPage or HowTo JSON-LD schema to your page using Google's Structured Data Markup Helper."
         })
 
     # 5. AI Readiness Signals (Meta Robots)
-    # Check if we are blocking AI bots via regular meta robots
-    # <meta name="robots" content="noindex" /> is bad for visibility
     meta_robots = re.search(r'<meta\s+name=["\']robots["\']\s+content=["\']([^"\']+)["\']', html, re.IGNORECASE)
     if meta_robots:
         content = meta_robots.group(1).lower()
@@ -91,7 +86,9 @@ def perform_aeo_checks(html: str, metadata: Dict[str, Any]) -> List[Dict[str, An
              issues.append({
                 "issue": "AI Blocking Detected (noindex)",
                 "severity": "Critical",
-                "details": "Your meta robots tag says 'noindex'. This tells AI and Search Engines to IGNORE your page."
+                "details": "Your meta robots tag says 'noindex'. This tells AI and Search Engines to IGNORE your page.",
+                "impact": "Your page will not appear in any search results or AI-generated answers.",
+                "fix": "Remove 'noindex' from your meta robots tag, or change to 'index, follow' if you want visibility."
             })
 
     return issues
